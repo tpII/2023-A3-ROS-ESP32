@@ -23,6 +23,8 @@
 #include <rmw_microros/rmw_microros.h>
 #endif
 
+#include "motores.h"
+
 #define STRING_BUFFER_LEN 50
 
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); vTaskDelete(NULL);}}
@@ -108,6 +110,21 @@ void micro_ros_task(void * arg)
 	RCCHECK(rcl_node_fini(&node));
 }
 
+static void mcpwm_example_brushed_motor_control(void *arg)
+{
+    //1. mcpwm gpio initialization
+    initMotorPins();
+
+    while (1) {
+        avanzar();
+        vTaskDelay(2000 / portTICK_RATE_MS);
+        retroceder();
+        vTaskDelay(2000 / portTICK_RATE_MS);
+        parar();
+        vTaskDelay(2000 / portTICK_RATE_MS);
+    }
+}
+
 
 void app_main(void)
 {
@@ -122,4 +139,6 @@ void app_main(void)
             NULL,
             CONFIG_MICRO_ROS_APP_TASK_PRIO,
             NULL);
+
+	xTaskCreate(mcpwm_example_brushed_motor_control, "mcpwm_examlpe_brushed_motor_control", 4096, NULL, 5, NULL);
 }
