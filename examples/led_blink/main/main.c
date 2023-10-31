@@ -56,7 +56,7 @@ void led_subscription_callback(const void * msgin)
 
 void coord_subscription_callback(const void * msgin)
 {
-	const microRos__msg__Coord * msg = (const microRos__msg__Coord *)msgin;
+	const geometry_msgs__msg__Vector3 * msg = (const geometry_msgs__msg__Vector3 *)msgin;
 	printf("(%.2f, %.2f)\n", msg->x, msg->y);
 	
 }
@@ -131,11 +131,11 @@ static void mcpwm_example_brushed_motor_control(void *arg)
 
     while (1) {
         avanzar();
-        vTaskDelay(2000 / portTICK_RATE_MS);
+        vTaskDelay(2000);
         retroceder();
-        vTaskDelay(2000 / portTICK_RATE_MS);
+        vTaskDelay(2000);
         parar();
-        vTaskDelay(2000 / portTICK_RATE_MS);
+        vTaskDelay(2000);
     }
 }
 
