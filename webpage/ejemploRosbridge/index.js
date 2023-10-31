@@ -14,6 +14,12 @@ var ledState = new ROSLIB.Topic({
     messageType : 'std_msgs/msg/Int32'
   });
 
+var coordState = new ROSLIB.Topic({
+    ros : ros,
+    name : '/microROS/coord',
+    messageType : 'geometry_msgs/msg/Vector3'
+  });
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'));
 })
@@ -31,6 +37,20 @@ app.post('/LED', (req, res) => {
     //console.log(req.body);
     res.redirect('/');
 })
+
+app.post('/COORD', (req, res) => {
+
+  var coordAction = new ROSLIB.Message({
+      x : parseFloat(req.body.x),
+      y : parseFloat(req.body.y)
+    });
+
+    coordState.publish(coordAction);
+    console.log(coordAction);
+    res.sendStatus(200);
+  //console.log(req.body);
+})
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
