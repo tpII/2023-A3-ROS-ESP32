@@ -19,6 +19,8 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
+#include <geometry_msgs/msg/vector3.h>
+
 #ifdef CONFIG_MICRO_ROS_ESP_XRCE_DDS_MIDDLEWARE
 #include <rmw_microros/rmw_microros.h>
 #endif
@@ -32,8 +34,10 @@
 
 rcl_subscription_t led_subscriber;
 std_msgs__msg__Int32 message;
-#define LED GPIO_NUM_2
+geometry_msgs__msg__Vector3 msgCoord;
+rcl_subscription_t coord_subscriber;
 
+#define LED GPIO_NUM_2
 
 /* Gestor de Subscripción al Tópico /microROS/led
    Se recibe un int_32
@@ -50,10 +54,16 @@ void led_subscription_callback(const void * msgin)
 	}
 }
 
+void coord_subscription_callback(const void * msgin)
+{
+	const microRos__msg__Coord * msg = (const microRos__msg__Coord *)msgin;
+	printf("(%.2f, %.2f)\n", msg->x, msg->y);
+	
+}
+
 void configurar_GPIO(){
 	gpio_set_direction(LED, GPIO_MODE_OUTPUT); 
 }
-
 
 
 
@@ -89,6 +99,8 @@ void micro_ros_task(void * arg)
 	// Create a best effort ping subscriber
 	RCCHECK(rclc_subscription_init_best_effort(&led_subscriber, &node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32), "/microROS/led"));
+	RCCHECK(rclc_subscription_init_best_effort(&coord_subscriber, &node,
+		ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3), "/microROS/coord"));
 
 
 
@@ -97,6 +109,8 @@ void micro_ros_task(void * arg)
 	RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
 	RCCHECK(rclc_executor_add_subscription(&executor, &led_subscriber, &message,
 		&led_subscription_callback, ON_NEW_DATA));
+	RCCHECK(rclc_executor_add_subscription(&executor, &coord_subscriber, &msgCoord,
+		&coord_subscription_callback, ON_NEW_DATA));
 
 	configurar_GPIO();
 
