@@ -2,6 +2,9 @@
 #define MOTORES_H
 
 #include "driver/mcpwm.h"
+#include "driver/ledc.h"
+
+
 
 #define LEDC_TIMER              LEDC_TIMER_0
 #define LEDC_MODE               LEDC_LOW_SPEED_MODE
@@ -18,10 +21,10 @@
     #define AIB 12
 #endif
 #ifndef BIA
-    #define BIA 10
+    #define BIA 25
 #endif
 #ifndef BIB
-    #define BIB 9
+    #define BIB 26
 #endif
 
 #define GPIO_PWM0A_OUT AIA   //PWM0A = AIA
@@ -41,6 +44,8 @@ void izquierda();
 
 void derecha();
 
+void SetIzqWc(float);
 
+void SetDerWc(float);
 
 #endif

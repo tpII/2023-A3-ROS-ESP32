@@ -58,11 +58,13 @@ void coord_subscription_callback(const void * msgin)
 {
 	const geometry_msgs__msg__Vector3 * msg = (const geometry_msgs__msg__Vector3 *)msgin;
 	printf("(%.2f, %.2f)\n", msg->x, msg->y);
-	
+	SetIzqWc(msg->x);
+	SetDerWc(msg->y);
 }
 
 void configurar_GPIO(){
 	gpio_set_direction(LED, GPIO_MODE_OUTPUT); 
+	initMotorPins();
 }
 
 
@@ -124,21 +126,6 @@ void micro_ros_task(void * arg)
 	RCCHECK(rcl_node_fini(&node));
 }
 
-static void mcpwm_example_brushed_motor_control(void *arg)
-{
-    //1. mcpwm gpio initialization
-    initMotorPins();
-
-    while (1) {
-        avanzar();
-        vTaskDelay(2000);
-        retroceder();
-        vTaskDelay(2000);
-        parar();
-        vTaskDelay(2000);
-    }
-}
-
 
 void app_main(void)
 {
@@ -153,6 +140,4 @@ void app_main(void)
             NULL,
             CONFIG_MICRO_ROS_APP_TASK_PRIO,
             NULL);
-
-	xTaskCreate(mcpwm_example_brushed_motor_control, "mcpwm_examlpe_brushed_motor_control", 4096, NULL, 5, NULL);
 }
