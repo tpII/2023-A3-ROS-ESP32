@@ -102,16 +102,31 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         background();
         joystick(width / 2, height / 3);
+        stop();
 
+    }
+
+    function stop(){
+        const location = window.location.hostname;
+            const settings = {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body : `{ "x" : "${0}", "y" : "${0}" }`
+                };
+            fetch(`http://${location}:3000/COORD`, settings);
     }
 
     let canTriggerEvent = true;
 
     function Draw(event) {
-      if (canTriggerEvent) {
-          console.log("Event triggered");
-          canTriggerEvent = false;
-          if (paint) {
+
+        getPosition(event);                                                                     
+        if (paint) {
+
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             background();
             var angle_in_degrees,x, y, speed;
@@ -121,8 +136,10 @@
                 angle_in_degrees = Math.round(-angle * 180 / Math.PI);
             }
             else {
-                angle_in_degrees =Math.round( 360 - angle * 180 / Math.PI);
+                angle_in_degrees = Math.round( 360 - angle * 180 / Math.PI);
             }
+
+            var angulo = angle_in_degrees * 2 * Math.PI / 360; 
 
 
             if (is_it_in_the_circle()) {
@@ -135,26 +152,34 @@
                 y = radius * Math.sin(angle) + y_orig;
                 joystick(x, y);
             }
-            getPosition(event);
+            if (canTriggerEvent) {
+            console.log("Event triggered");
+            canTriggerEvent = false;
 
             var x_relative = Math.round(x - x_orig);
             var y_relative = Math.round(y - y_orig);
             var x_float = x_relative / radius;
             var y_float = -y_relative / radius;
+
+            var velocidad = Math.sqrt(x_float*x_float + y_float*y_float);
+
+            var motorDer = velocidad * (y_float - x_float);
+            var motorIzq = velocidad * (y_float + x_float);
+
             const location = window.location.hostname;
             const settings = {
-                  method: 'POST',
-                  headers: {
-                      Accept: 'application/json',
-                      'Content-Type': 'application/json',
-                  },
-                body : `{ "x" : "${x_float}", "y" : "${y_float}" }`
-              };
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body : `{ "x" : "${motorDer}", "y" : "${motorIzq}" }`
+                };
             fetch(`http://${location}:3000/COORD`, settings);
-        }
-          setTimeout(() => {
-            canTriggerEvent = true;
-          }, 200); // Allow the event to be triggered again after 200 milliseconds
+            setTimeout(() => {
+                canTriggerEvent = true;
+                }, 200); // Allow the event to be triggered again after 200 milliseconds
+            }
         }
     } 
 </script>
