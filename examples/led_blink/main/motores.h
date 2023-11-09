@@ -34,16 +34,6 @@
 
 void initMotorPins();
 
-void avanzar();
-
-void retroceder();
-
-void parar();
-
-void izquierda();
-
-void derecha();
-
 void SetIzqWc(float);
 
 void SetDerWc(float);

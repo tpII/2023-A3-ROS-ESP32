@@ -45,22 +45,6 @@ void SetIzqWc(float Wc){
         mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, -cicloDeTrabajo);
          mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
     }
-
-
-    /*int cicloDeTrabajo = Wc * 1023;
-    if (Wc > 0){
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, cicloDeTrabajo));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, 0));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1));
-    }
-    else
-    {
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, -cicloDeTrabajo));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1));
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
-    }*/
 }
 
 void SetDerWc(float Wc){
@@ -76,29 +60,4 @@ void SetDerWc(float Wc){
         mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, -cicloDeTrabajo);
          mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
     }
-}
-
-void avanzar(){
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0B_OUT);
-    mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0A_OUT, 50);
-    mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0A_OUT, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
-}
-
-void retroceder(){
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0A_OUT);
-    mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0B_OUT, 50);
-    mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0B_OUT, MCPWM_DUTY_MODE_0); //call this each time, if operator was previously in low/high state
-}
-
-void parar(){
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0A_OUT);
-    mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, GPIO_PWM0B_OUT);
-}
-
-void izquierda(){
-
-}
-
-void derecha(){
-
 }
