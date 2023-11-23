@@ -37,12 +37,14 @@
 //Esto porq todavia no funka del todo bien
 #define ULTRASONIDO 0
 
-
 rcl_subscription_t led_subscriber;
 std_msgs__msg__Int16 message;
 
 rcl_subscription_t coord_subscriber;
 geometry_msgs__msg__Vector3 msgCoord;
+
+rcl_subscription_t string_subscriber;
+std_msgs__msg__String msgString;
 
 #if ULTRASONIDO
 	rcl_publisher_t ultraSonido_publisher;
@@ -95,6 +97,12 @@ void coord_subscription_callback(const void * msgin)
 	}
 	
 }
+
+void string_subscription_callback(const void* msgin) {
+	const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
+	printf("String recibida: %s\n" msg->data.data);
+}
+
 #if ULTRASONIDO
 void ultraSonido_subscription_callback(const void * msgin)
 {
@@ -170,6 +178,10 @@ void micro_ros_task(void * arg)
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16), "/microROS/led"));
 	RCCHECK(rclc_subscription_init_best_effort(&coord_subscriber, &node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3), "/microROS/coord"));
+	RCCHECK(rclc_subscription_init_best_effort(&string_subscriber, &node,
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String), "/microROS/coord"));
+
+
 	// Subscriptor UltraSonido
 	#if ULTRASONIDO
 	RCCHECK(rclc_subscription_init_best_effort(&ultraSonido_subscriber, &node,
@@ -190,6 +202,8 @@ void micro_ros_task(void * arg)
 	RCCHECK(rclc_executor_add_subscription(&executor, &led_subscriber, &message,
 		&led_subscription_callback, ON_NEW_DATA));
 	RCCHECK(rclc_executor_add_subscription(&executor, &coord_subscriber, &msgCoord,
+		&coord_subscription_callback, ON_NEW_DATA));
+	RCCHECK(rclc_executor_add_subscription(&executor, &string_subscriber, &msgString,
 		&coord_subscription_callback, ON_NEW_DATA));
 
 	#if ULTRASONIDO
@@ -219,6 +233,7 @@ void micro_ros_task(void * arg)
 	#endif
 	RCCHECK(rcl_subscription_fini(&coord_subscriber, &node));
 	RCCHECK(rcl_subscription_fini(&led_subscriber, &node));
+	RCCHECK(rcl_subscription_fini(&string_subscriber, &node));
 	RCCHECK(rcl_node_fini(&node));
 }
 
