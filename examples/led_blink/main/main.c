@@ -179,7 +179,7 @@ void micro_ros_task(void * arg)
 	RCCHECK(rclc_subscription_init_best_effort(&coord_subscriber, &node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3), "/microROS/coord"));
 	RCCHECK(rclc_subscription_init_best_effort(&string_subscriber, &node,
-		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String), "/microROS/coord"));
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String), "/microROS/string"));
 
 
 	// Subscriptor UltraSonido
