@@ -98,9 +98,35 @@ void coord_subscription_callback(const void * msgin)
 	
 }
 
+// Format: "var-name":value;
 void string_subscription_callback(const void* msgin) {
 	const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
-	printf("String recibida: %s\n" msg->data.data);
+	printf("String recibido: %s\n" msg->data.data);
+
+	// Parse
+	char* arg;
+}
+
+char* getArgInString(char* haystach, unsigned int arg) {
+	char* found = NULL;
+	unsigned int i, str_index = 0, last_str_index = 0;
+	unsigned char end;
+	for (i = 0; (i <= arg); i++) {
+		while(!end && haystack[str_index] != ';') {
+			str_index++;
+			end = haystack[str_index] != '\0';
+		}
+		if (end)
+			break;
+	}
+	if (!end) {
+		found = (char*) malloc((str_index - last_str_index + 1)*sizeof(char));
+		for (i = last_str_index; i < str_index; i++) {
+			found[i-last_str_index] = haystack[i];
+		}
+	}
+	return found;
+
 }
 
 #if ULTRASONIDO
@@ -121,6 +147,7 @@ void configurar_GPIO(){
 	gpio_set_direction(LED, GPIO_MODE_OUTPUT); 
 	initMotorPins();
 }
+
 #if ULTRASONIDO
 void ultrasonido_task(void *arg){
 	initUltrasonido();
