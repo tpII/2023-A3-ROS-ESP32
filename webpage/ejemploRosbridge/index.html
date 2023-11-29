@@ -6,7 +6,7 @@
 
 <body>
   <h1>LED :^)</h1>
-  <form action="/LED" method="post">
+  <form action="/STRING" method="post">
     <button type="submit" name="data" value="1">Prender</button>
     <button type="submit" name="data" value="0">Apagar</button>
   </form>
@@ -116,7 +116,7 @@
                     },
                     body : `{ "x" : "${0}", "y" : "${0}" }`
                 };
-            fetch(`http://${location}:3000/COORD`, settings);
+            fetch(`http://${location}:3000/STRING`, settings);
     }
 
     let canTriggerEvent = true;
@@ -175,7 +175,7 @@
                     },
                     body : `{ "x" : "${motorDer}", "y" : "${motorIzq}" }`
                 };
-            fetch(`http://${location}:3000/COORD`, settings);
+            fetch(`http://${location}:3000/STRING`, settings);
             setTimeout(() => {
                 canTriggerEvent = true;
                 }, 200); // Allow the event to be triggered again after 200 milliseconds

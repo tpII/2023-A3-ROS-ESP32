@@ -56,10 +56,12 @@ void string_subscription_callback(const void* msgin) {
 	printf("String recibido: %s\n", msg->data.data);
 	
 	// Parse
-	// Coord
-	char* str = msg->data.data;
-	float x = *(float*) &str[0];
-	float y = *(float*) &str[4];
+	float x, y;
+	int led_state;
+	int ults;
+
+	sscanf(msg->data.data, "(%f, %f) - %d - %d", &x, &y, &led_state, &ults);
+
 	if (canMove) {
 		printf("Coord: (%.2f, %.2f)\n", x, y);
 		SetIzqWc(x);
@@ -67,14 +69,12 @@ void string_subscription_callback(const void* msgin) {
 	}
 
 	// LED
-	char led_state = str[8];
 	if ((led_state >= 0) && (led_state <= 1)){
 		printf("LED state: %d\n", led_state);
 		gpio_set_level(LED, led_state);
 	}
 
 	// Ultrasound
-	int ults = *(int*) &str[9];
 	if (ults < 10){ //10 cm
 		printf("Choque %d\n", ults);
 		canMove = 0;
@@ -82,9 +82,6 @@ void string_subscription_callback(const void* msgin) {
 		SetIzqWc(-1);
 		SetDerWc(-1);
 	}
-
-	// Parse
-	char* arg;
 }
 
 void configurar_GPIO(){
@@ -127,6 +124,7 @@ void micro_ros_task(void * arg)
 
 	// Create executor
 	rclc_executor_t executor;
+	RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
 	RCCHECK(rclc_executor_add_subscription(&executor, &string_subscriber, &msgString,
 		&string_subscription_callback, ON_NEW_DATA));
 
