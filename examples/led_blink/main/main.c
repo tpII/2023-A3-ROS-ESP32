@@ -13,13 +13,11 @@
 #include "esp_system.h"
 
 #include <uros_network_interfaces.h>
-#include <std_msgs/msg/int16.h>
+#include <std_msgs/msg/string.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
-
-#include <geometry_msgs/msg/vector3.h>
 
 
 #ifdef CONFIG_MICRO_ROS_ESP_XRCE_DDS_MIDDLEWARE
@@ -27,36 +25,21 @@
 #endif
 
 #include "motores.h"
-//#include "ultrasonido.h"
 
 #define STRING_BUFFER_LEN 50
 
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
-//Esto porq todavia no funka del todo bien
-#define ULTRASONIDO 0
-
-rcl_subscription_t led_subscriber;
-std_msgs__msg__Int16 message;
-
-rcl_subscription_t coord_subscriber;
-geometry_msgs__msg__Vector3 msgCoord;
-
 rcl_subscription_t string_subscriber;
 std_msgs__msg__String msgString;
 
-#if ULTRASONIDO
-	rcl_publisher_t ultraSonido_publisher;
-	std_msgs__msg__Int16 msgUltrasonido;
-
-	rcl_subscription_t ultraSonido_subscriber;
-	std_msgs__msg__Int16 msgInUS;
-#endif
-
 #define LED GPIO_NUM_2
 
-#if ULTRASONIDO
+int canMove = 1; //Booleano para habilitar las ruedas
+double lastHit = 0;
+
+
 //Para calcular el tiempo
 double dwalltime(){
         double sec;
@@ -67,108 +50,47 @@ double dwalltime(){
         return sec;
 }
 
-#endif
-
-/* Gestor de Subscripción al Tópico /microROS/led
-   Se recibe un int_32
-   Si data = 0 => Apagado
-   Si data = 1 => Prendido
-*/
-void led_subscription_callback(const void * msgin)
-{
-	const std_msgs__msg__Int16 * msg = (const std_msgs__msg__Int16 *)msgin;
-
-	uint8_t nextState = msg->data;
-	if ((nextState >= 0) && (nextState <= 1)){
-		gpio_set_level(LED, nextState);
-	}
-}
-
-int canMove = 1; //Booleano para habilitar las ruedas
-double lastHit = 0;
-
-void coord_subscription_callback(const void * msgin)
-{
-	if (canMove){
-		const geometry_msgs__msg__Vector3 * msg = (const geometry_msgs__msg__Vector3 *)msgin;
-		printf("(%.2f, %.2f)\n", msg->x, msg->y);
-		SetIzqWc(msg->x);
-		SetDerWc(msg->y);
-	}
-	
-}
-
 // Format: "var-name":value;
 void string_subscription_callback(const void* msgin) {
 	const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
-	printf("String recibido: %s\n" msg->data.data);
-
+	printf("String recibido: %s\n", msg->data.data);
+	
 	// Parse
-	char* arg;
-}
-
-char* getArgInString(char* haystach, unsigned int arg) {
-	char* found = NULL;
-	unsigned int i, str_index = 0, last_str_index = 0;
-	unsigned char end;
-	for (i = 0; (i <= arg); i++) {
-		while(!end && haystack[str_index] != ';') {
-			str_index++;
-			end = haystack[str_index] != '\0';
-		}
-		if (end)
-			break;
+	// Coord
+	char* str = msg->data.data;
+	float x = *(float*) &str[0];
+	float y = *(float*) &str[4];
+	if (canMove) {
+		printf("Coord: (%.2f, %.2f)\n", x, y);
+		SetIzqWc(x);
+		SetDerWc(y);
 	}
-	if (!end) {
-		found = (char*) malloc((str_index - last_str_index + 1)*sizeof(char));
-		for (i = last_str_index; i < str_index; i++) {
-			found[i-last_str_index] = haystack[i];
-		}
+
+	// LED
+	char led_state = str[8];
+	if ((led_state >= 0) && (led_state <= 1)){
+		printf("LED state: %d\n", led_state);
+		gpio_set_level(LED, led_state);
 	}
-	return found;
 
-}
-
-#if ULTRASONIDO
-void ultraSonido_subscription_callback(const void * msgin)
-{
-	const std_msgs__msg__Int16 * msg = (const std_msgs__msg__Int16 *)msgin;
-	if (msg->data < 10){ //10 cm
-		printf("Choque");
+	// Ultrasound
+	int ults = *(int*) &str[9];
+	if (ults < 10){ //10 cm
+		printf("Choque %d\n", ults);
 		canMove = 0;
 		lastHit = dwalltime();
 		SetIzqWc(-1);
 		SetDerWc(-1);
 	}
+
+	// Parse
+	char* arg;
 }
-#endif
 
 void configurar_GPIO(){
 	gpio_set_direction(LED, GPIO_MODE_OUTPUT); 
 	initMotorPins();
 }
-
-#if ULTRASONIDO
-void ultrasonido_task(void *arg){
-	initUltrasonido();
-	int ultDist = 0;
-	while (true){
-		printf("Task Ultrasonido");
-		ultDist = sensarUltrasonido();
-		if (ultDist != -1){
-			msgUltrasonido.data = ultDist;
-			RCSOFTCHECK(rcl_publish(&ultraSonido_publisher, &msgUltrasonido, NULL));
-		}
-		if ((!canMove) && (dwalltime() - lastHit) >= 2)
-		{
-			canMove = 1;
-			SetIzqWc(0);
-			SetIzqWc(0);
-		}
-		usleep(500000);
-	}
-}
-#endif
 
 
 void micro_ros_task(void * arg)
@@ -200,54 +122,15 @@ void micro_ros_task(void * arg)
 	//Nodo llamado LED_NODE
 	RCCHECK(rclc_node_init_default(&node, "led_node", "", &support));
 
-	// Create a best effort ping subscriber
-	RCCHECK(rclc_subscription_init_best_effort(&led_subscriber, &node,
-		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16), "/microROS/led"));
-	RCCHECK(rclc_subscription_init_best_effort(&coord_subscriber, &node,
-		ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3), "/microROS/coord"));
 	RCCHECK(rclc_subscription_init_best_effort(&string_subscriber, &node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String), "/microROS/string"));
 
-
-	// Subscriptor UltraSonido
-	#if ULTRASONIDO
-	RCCHECK(rclc_subscription_init_best_effort(&ultraSonido_subscriber, &node,
-		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16), "/microRos/ultraSonido"));
-
-	// Publicador UltraSonido
-	RCCHECK(rclc_publisher_init_default(
-		&ultraSonido_publisher,
-		&node,
-		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16),
-		"/microRos/ultraSonido"));
-	#endif
-	
-
 	// Create executor
 	rclc_executor_t executor;
-	RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
-	RCCHECK(rclc_executor_add_subscription(&executor, &led_subscriber, &message,
-		&led_subscription_callback, ON_NEW_DATA));
-	RCCHECK(rclc_executor_add_subscription(&executor, &coord_subscriber, &msgCoord,
-		&coord_subscription_callback, ON_NEW_DATA));
 	RCCHECK(rclc_executor_add_subscription(&executor, &string_subscriber, &msgString,
-		&coord_subscription_callback, ON_NEW_DATA));
-
-	#if ULTRASONIDO
-	RCCHECK(rclc_executor_add_subscription(&executor, &ultraSonido_subscriber, &msgInUS,
-		&ultraSonido_subscription_callback, ON_NEW_DATA));
-	#endif
+		&string_subscription_callback, ON_NEW_DATA));
 
 	configurar_GPIO();
-
-	#if ULTRASONIDO
-	xTaskCreate(ultrasonido_task,
-				"ultrasonido_task", 
-				configMINIMAL_STACK_SIZE * 3,
-				NULL, 
-				5, 
-				NULL);
-	#endif
 	
 	while(1){
 		rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
@@ -255,11 +138,6 @@ void micro_ros_task(void * arg)
 	}
 
 	// Free resources
-	#if ULTRASONIDO
-		RCCHECK(rcl_subscription_fini(&ultraSonido_subscriber, &node));
-	#endif
-	RCCHECK(rcl_subscription_fini(&coord_subscriber, &node));
-	RCCHECK(rcl_subscription_fini(&led_subscriber, &node));
 	RCCHECK(rcl_subscription_fini(&string_subscriber, &node));
 	RCCHECK(rcl_node_fini(&node));
 }

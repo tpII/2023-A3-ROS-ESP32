@@ -8,16 +8,10 @@ var ros_server = 'ws://localhost:9090';
 var ros = new ROSLIB.Ros();
 ros.connect(ros_server);
 
-var ledState = new ROSLIB.Topic({
+var state = new ROSLIB.Topic({
     ros : ros,
     name : '/microROS/led',
-    messageType : 'std_msgs/msg/Int32'
-  });
-
-var coordState = new ROSLIB.Topic({
-    ros : ros,
-    name : '/microROS/coord',
-    messageType : 'geometry_msgs/msg/Vector3'
+    messageType : 'std_msgs/msg/String'
   });
 
 app.get('/', (req, res) => {
@@ -27,15 +21,28 @@ app.get('/', (req, res) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/LED', (req, res) => {
+app.post('/STRING', (req, res) => {
 
-    var ledAction = new ROSLIB.Message({
-        data : parseInt(req.body.data)
+    var str = ;
+
+    var stringAction = new ROSLIB.Message({
+        data : str
       });
 
     ledState.publish(ledAction);
     //console.log(req.body);
     res.redirect('/');
+})
+
+app.post('/LED', (req, res) => {
+
+  var ledAction = new ROSLIB.Message({
+      data : parseInt(req.body.data)
+    });
+
+  ledState.publish(ledAction);
+  //console.log(req.body);
+  res.redirect('/');
 })
 
 app.post('/COORD', (req, res) => {
