@@ -11,7 +11,7 @@ ros.connect(ros_server);
 var ledState = new ROSLIB.Topic({
     ros : ros,
     name : '/microROS/led',
-    messageType : 'std_msgs/msg/Int32'
+    messageType : 'std_msgs/msg/Int16'
   });
 
 var coordState = new ROSLIB.Topic({

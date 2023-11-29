@@ -1,17 +1,21 @@
 #include "ultrasonido.h"
+ultrasonic_sensor_t miSensor = {
+        .trigger_pin = TRIGGER,
+        .echo_pin = ECHO
+    };
 
 void initUltrasonido(){
-    ultrasonic_init(&sensor);
+    ultrasonic_init(&miSensor);
 }
 
-float sensarUltrasonido(){
+int sensarUltrasonido(){
     float distance;
-    esp_err_t res = ultrasonic_measure(&sensor, MAX_DISTANCE_CM, &distance);
+    esp_err_t res = ultrasonic_measure(&miSensor, MAX_DISTANCE_CM, &distance);
     if (res != ESP_OK)
     {
         distance = -1;
     }
     else
         distance*=100;
-    return distance;
+    return (int)distance;
 }
