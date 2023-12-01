@@ -8,22 +8,21 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
             body {
-                background-color: #f0f0f0; /* Color de fondo gris claro */
+                background-color: #FFFFFF; /* Color de fondo gris claro */
                 text-align: center;
                 font-family: Arial, sans-serif;
             }
     
             h1 {
-                color: red; /* Color de texto rojo */
+                color: #FF3034; /* Color de texto rojo */
+            }
+
+            h2 {
+                color: #646464;
             }
     
             h3 {
-                color: red; /* Color de texto rojo */
-            }
-    
-            #logo {
-                max-width: 200px;
-                margin-top: 20px; /* Espacio entre la foto y los botones */
+                color: #FF3034; /* Color de texto rojo */
             }
     
             #container {
@@ -59,16 +58,21 @@
                 <h3>Usando microROS</h3>
             </div>
             <div class="col-md-6" id="buttonContainer">
-            <img id="logo" src="logo.png" alt="Espressif Systems Logo" class="mx-auto d-block">
-                <h2>LED :^)</h2>
-                <form action="/LED" method="post">
-                    <button type="submit" name="data" value="1">Prender</button>
-                    <button type="submit" name="data" value="0">Apagar</button>
-                </form>
+            <img id="logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWZ9W5qdLRbY80I9Wt7iam4PaPHreY2g6DSTmJvR68vA&s" alt="Espressif Systems Logo" class="mx-auto d-block"/>
             </div>
         </div>
     </div>
-<canvas id="canvas" name="game"></canvas>
+    <div class="container-fluid"></div>
+        <h2>LED :^)</h2>
+        <form action="/LED" method="post">
+            <div class="btn-group" role="group">
+                <button type="submit" name="data" value="1" class="btn btn-success">Prender</button>
+                <button type="submit" name="data" value="0" class="btn btn-danger">Apagar</button>
+            </div>
+        </form>
+        <canvas id="canvas" name="game"></canvas>
+    </div>
+</body>
 <script>
     var canvas, ctx;
 
@@ -90,14 +94,11 @@
         window.addEventListener('resize', resize);
     });
 
-  
-
-
     var width, height, radius, x_orig, y_orig;
     function resize() {
-        width = window.innerWidth;
+        width = window.innerWidth / 2;
         radius = 200;
-        height = radius * 6.5;
+        height = radius * 4.5;
         ctx.canvas.width = width;
         ctx.canvas.height = height;
         background();
@@ -239,5 +240,4 @@
         }
     } 
 </script>
-</body>
 </html>
