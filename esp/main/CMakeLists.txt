@@ -1,3 +1,3 @@
-idf_component_register(SRCS main.c motores.c ultrasonido.c ultrasonic.c
-                    INCLUDE_DIRS ""
+idf_component_register(SRCS main.c src/motores.c src/ultrasonido.c src/ultrasonic.c
+                    INCLUDE_DIRS "" "./src" "./inc"
                     )
