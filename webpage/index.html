@@ -70,8 +70,9 @@
                 <button type="submit" name="data" value="0" class="btn btn-danger">Apagar</button>
             </div>
         </form>
-        <canvas id="canvas" name="game"></canvas>
+        <h2>Distancia:</h2><h2 id="distance">10cm</h2>
     </div>
+    <canvas id="canvas" name="game"></canvas>
 </body>
 <script>
     var canvas, ctx;
@@ -87,11 +88,13 @@
         document.addEventListener('mousemove', Draw);
 
         document.addEventListener('touchstart', startDrawing);
-            document.addEventListener('touchend', stopDrawing);
-            document.addEventListener('touchcancel', stopDrawing);
-            document.addEventListener('touchmove', Draw);
+        document.addEventListener('touchend', stopDrawing);
+        document.addEventListener('touchcancel', stopDrawing);
+        document.addEventListener('touchmove', Draw);
 
         window.addEventListener('resize', resize);
+
+        
     });
 
     var width, height, radius, x_orig, y_orig;
@@ -238,6 +241,11 @@
                 }, 200); // Allow the event to be triggered again after 200 milliseconds
             }
         }
-    } 
+    }
+    var intervalId = setInterval(function() {
+        const location = window.location.hostname;
+        fetch(`http://${location}:3000/US`).then((response) => response.json()).then((json) => document.getElementById('distance').innerHTML = json.distancia + "cm");
+        console.log("Se hizo algo");
+    }, 1000);
 </script>
 </html>

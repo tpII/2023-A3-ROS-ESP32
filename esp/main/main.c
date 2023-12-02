@@ -190,7 +190,7 @@ void micro_ros_task(void * arg)
 
 
 	RCCHECK(rclc_subscription_init_default(&ultraSonido_subscriber, &node,
-		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16), "/microRos/ultraSonido"));
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16), "/microROS/ultraSonido"));
 
 	// Publicador UltraSonido
 	RCCHECK(rclc_publisher_init_default(
