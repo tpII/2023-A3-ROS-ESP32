@@ -4,7 +4,7 @@
 #include "ultrasonic.h"
 #include <esp_err.h>
 
-#define MAX_DISTANCE_CM 20 // 1m max
+#define MAX_DISTANCE_M 0.5 // 1m max
 
 #define TRIGGER 18
 #define ECHO 5

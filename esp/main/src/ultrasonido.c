@@ -10,7 +10,7 @@ void initUltrasonido(){
 
 int sensarUltrasonido(){
     float distance;
-    esp_err_t res = ultrasonic_measure(&miSensor, MAX_DISTANCE_CM, &distance);
+    esp_err_t res = ultrasonic_measure(&miSensor, MAX_DISTANCE_cd M, &distance);
     if (res != ESP_OK)
     {
         distance = -1;

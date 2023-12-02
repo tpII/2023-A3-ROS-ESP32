@@ -55,11 +55,12 @@ geometry_msgs__msg__Vector3 msgCoord;
 
 // [ -------------------- VARIABLES GLOBALES --------------------]
 uint8_t canMove = 1; //Booleano para habilitar las ruedas
-double lastHit = 0;
+double lastHit = 0;  //Tiempo de colisión
 
 
 #if ULTRASONIDO
 //Para calcular el tiempo
+//Retorna el tiempo actual en segundos
 double dwalltime(){
         double sec;
         struct timeval tv;
@@ -90,8 +91,8 @@ void led_subscription_callback(const void * msgin)
 
 /* Gestor de Subscripción al Tópico /microROS/coord
    Se reciben 3 float
-   x: coordenada x de joystick
-   y: coordenada y de joystick
+   x: Potencia deseada para el motor izquierdo
+   y: Potencia deseada para el motor derecho
 */
 void coord_subscription_callback(const void * msgin)
 {
@@ -123,8 +124,14 @@ void ultraSonido_subscription_callback(const void * msgin)
 
 // [ -------------------- FUNCIONES DE PUBLISHERS --------------------]
 #if ULTRASONIDO
+/* Gestor de Timer para publicar al Tópico /microROS/ultraSonido
+   Sensa lo que está en frente del ultrasonido
+   Como máximo 50cm
+   Se envía un Int16
+   Representa la distancia en cm
+*/
 void ultrasonido_callback(rcl_timer_t * timer, int64_t last_call_time){
-	initUltrasonido();
+	
 	static int ultDist = 0;
 	(void) last_call_time;
 	if (timer != NULL) {
@@ -145,9 +152,13 @@ void ultrasonido_callback(rcl_timer_t * timer, int64_t last_call_time){
 
 
 // [ -------------------- FUNCIONES --------------------]
+/* 
+	Inicializa los puertos GPIO tanto del LED como del Motor y del ultrasonido
+*/
 void configurar_GPIO(){
 	gpio_set_direction(LED, GPIO_MODE_OUTPUT); 
 	initMotorPins();
+	initUltrasonido();
 }
 
 // [ -------------------- TASK DE MICROROS --------------------]
@@ -197,10 +208,10 @@ void micro_ros_task(void * arg)
 		&ultraSonido_publisher,
 		&node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16),
-		"/microRos/ultraSonido"));
+		"/microROS/ultraSonido"));
 
 	rcl_timer_t timer = rcl_get_zero_initialized_timer();
-	const unsigned int timer_timeout = 200;
+	const unsigned int timer_timeout = 100;
 	RCCHECK(rclc_timer_init_default(
 		&timer,
 		&support,
