@@ -26,23 +26,19 @@
 #include <rmw_microros/rmw_microros.h>
 #endif
 
-
-
 #include "motores.h"
 
 #define STRING_BUFFER_LEN 50
-
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); vTaskDelete(NULL);}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
-
-//Esto porq todavia no funka del todo bien
+#define LED GPIO_NUM_2
 #define ULTRASONIDO 1
-
 #if ULTRASONIDO
 	#include "ultrasonido.h"
 #endif
 
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); vTaskDelete(NULL);}}
+#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
+// [ -------------------- VARIABLES DE SUSCRIPTORES Y PUBLISHERS --------------------]
 rcl_subscription_t led_subscriber;
 std_msgs__msg__Int16 message;
 
@@ -57,7 +53,10 @@ geometry_msgs__msg__Vector3 msgCoord;
 	std_msgs__msg__Int16 msgInUS;
 #endif
 
-#define LED GPIO_NUM_2
+// [ -------------------- VARIABLES GLOBALES --------------------]
+uint8_t canMove = 1; //Booleano para habilitar las ruedas
+double lastHit = 0;
+
 
 #if ULTRASONIDO
 //Para calcular el tiempo
@@ -71,6 +70,8 @@ double dwalltime(){
 }
 
 #endif
+
+// [ -------------------- FUNCIONES DE SUSCRIPTORES --------------------]
 
 /* Gestor de Subscripción al Tópico /microROS/led
    Se recibe un int_32
@@ -87,9 +88,11 @@ void led_subscription_callback(const void * msgin)
 	}
 }
 
-int canMove = 1; //Booleano para habilitar las ruedas
-double lastHit = 0;
-
+/* Gestor de Subscripción al Tópico /microROS/coord
+   Se reciben 3 float
+   x: coordenada x de joystick
+   y: coordenada y de joystick
+*/
 void coord_subscription_callback(const void * msgin)
 {
 	if (canMove){
@@ -101,6 +104,10 @@ void coord_subscription_callback(const void * msgin)
 	
 }
 #if ULTRASONIDO
+/* Gestor de Subscripción al Tópico /microROS/ultraSonido
+   Se reciben un Int16
+   Representa la distancia en cm
+*/
 void ultraSonido_subscription_callback(const void * msgin)
 {
 	const std_msgs__msg__Int16 * msg = (const std_msgs__msg__Int16 *)msgin;
@@ -114,10 +121,7 @@ void ultraSonido_subscription_callback(const void * msgin)
 }
 #endif
 
-void configurar_GPIO(){
-	gpio_set_direction(LED, GPIO_MODE_OUTPUT); 
-	initMotorPins();
-}
+// [ -------------------- FUNCIONES DE PUBLISHERS --------------------]
 #if ULTRASONIDO
 void ultrasonido_callback(rcl_timer_t * timer, int64_t last_call_time){
 	initUltrasonido();
@@ -140,6 +144,13 @@ void ultrasonido_callback(rcl_timer_t * timer, int64_t last_call_time){
 #endif
 
 
+// [ -------------------- FUNCIONES --------------------]
+void configurar_GPIO(){
+	gpio_set_direction(LED, GPIO_MODE_OUTPUT); 
+	initMotorPins();
+}
+
+// [ -------------------- TASK DE MICROROS --------------------]
 void micro_ros_task(void * arg)
 {
 	rcl_allocator_t allocator = rcl_get_default_allocator();
@@ -232,7 +243,7 @@ void micro_ros_task(void * arg)
 	RCCHECK(rcl_node_fini(&node));
 }
 
-
+// [ -------------------- PROGRAMA PRINCIPAL --------------------]
 void app_main(void)
 {
 #if defined(CONFIG_MICRO_ROS_ESP_NETIF_WLAN) || defined(CONFIG_MICRO_ROS_ESP_NETIF_ENET)
