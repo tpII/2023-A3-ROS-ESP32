@@ -1,7 +1,6 @@
 const express = require('express')
 const path = require('path');
 const ROSLIB = require('roslib')
-const EventEmitter = require('node:events');
 const app = express()
 const port = 3000
 
@@ -39,10 +38,8 @@ var listener = new ROSLIB.Topic({
 var dist = 0;
 // Subscribe
 listener.subscribe(function(message) {
-  //Document.getElementById('distance').innerHTML = message.data;
   console.log("Se recibió: " + message.data);
   dist = message.data;
-  //listener.unsubscribe;
 });
   
 
@@ -60,7 +57,6 @@ app.post('/LED', (req, res) => {
       });
 
     ledState.publish(ledAction);
-    //console.log(req.body);
     res.redirect('/');
 })
 
@@ -74,7 +70,6 @@ app.post('/COORD', (req, res) => {
     coordState.publish(coordAction);
     console.log(coordAction);
     res.sendStatus(200);
-  //console.log(req.body);
 })
 
 app.get('/US', (req, res) => {
