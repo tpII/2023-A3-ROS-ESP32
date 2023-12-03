@@ -7,7 +7,7 @@ Este proyecto busca documentar la portación de μROS al ESP32. Analizar sus pos
 
 # Arquitectura de la solución
 
-![image](.images/Esquema.png)
+![image](.images/Esquema.svg)
 
 # 📖 Bitácora
 Acá subiremos las actualizaciones semanales con respecto a los avances del proyecto.
