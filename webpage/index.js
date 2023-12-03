@@ -6,12 +6,20 @@ const port = 3000
 
 var ros_server = 'ws://localhost:9090';
 var ros = new ROSLIB.Ros();
+
+ros.on('error', function(error)  {
+  console.log(error);
+});
+
+
 ros.connect(ros_server);
 
+
+// Publishers
 var ledState = new ROSLIB.Topic({
     ros : ros,
     name : '/microROS/led',
-    messageType : 'std_msgs/msg/Int32'
+    messageType : 'std_msgs/msg/Int16'
   });
 
 var coordState = new ROSLIB.Topic({
@@ -19,6 +27,21 @@ var coordState = new ROSLIB.Topic({
     name : '/microROS/coord',
     messageType : 'geometry_msgs/msg/Vector3'
   });
+
+// Subscriber
+var listener = new ROSLIB.Topic({
+  ros: ros,
+  name: '/microROS/ultraSonido',
+  messageType: 'std_msgs/msg/Int16'
+});
+
+var dist = 0;
+// Subscribe
+listener.subscribe(function(message) {
+  console.log("Se recibió: " + message.data);
+  dist = message.data;
+});
+  
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'));
@@ -34,7 +57,6 @@ app.post('/LED', (req, res) => {
       });
 
     ledState.publish(ledAction);
-    //console.log(req.body);
     res.redirect('/');
 })
 
@@ -48,7 +70,12 @@ app.post('/COORD', (req, res) => {
     coordState.publish(coordAction);
     console.log(coordAction);
     res.sendStatus(200);
-  //console.log(req.body);
+})
+
+app.get('/US', (req, res) => {
+  res.send(({
+    distancia: dist
+  }));
 })
 
 

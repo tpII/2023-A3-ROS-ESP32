@@ -1,3 +1,6 @@
 {
-    "cmake.sourceDirectory": "/home/matias/Documentos/2023-A3-ROS-ESP32/examples/led_blink"
+    "cmake.sourceDirectory": "/home/matias/Documentos/2023-A3-ROS-ESP32/examples/led_blink",
+    "files.associations": {
+        "time.h": "c"
+    }
 }
