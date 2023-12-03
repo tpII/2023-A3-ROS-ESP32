@@ -7,7 +7,8 @@ Este proyecto busca documentar la portación de μROS al ESP32. Analizar sus pos
 
 # Arquitectura de la solución
 
-![image](.images/Esquema.png)
+![image](https://github.com/tpII/2023-A3-ROS-ESP32/assets/89547839/93de4b47-b5e6-4e6a-a745-58a85923d332)
+
 
 # 📖 Bitácora
 Acá subiremos las actualizaciones semanales con respecto a los avances del proyecto.
